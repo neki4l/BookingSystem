@@ -1,0 +1,31 @@
+{% extends 'booking/base.html' %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">Бронирование номера {{ room.room_number }}</h3>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="form-label">Дата заезда</label>
+                            {{ form.check_in }}
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Дата выезда</label>
+                            {{ form.check_out }}
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 mt-3">
+                            <i class="fas fa-calendar-check me-2"></i>Подтвердить бронь
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Grand Hotel{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .room-card {
+            transition: transform 0.3s, box-shadow 0.3s;
+            min-height: 420px;
+        }
+        .room-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .hero-section {
+            background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), 
+                        url('https://source.unsplash.com/random/1920x1080/?hotel,lobby');
+            background-size: cover;
+            background-position: center;
+            height: 70vh;
+        }
+        .price-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 1.2rem;
+        }
+            .auth-form p {
+                margin-bottom: 1rem;
+            }
+            
+            .auth-form label {
+                font-weight: 500;
+                color: #555;
+                margin-bottom: 0.5rem;
+                display: block;
+            }
+            
+            .auth-form input[type="text"],
+            .auth-form input[type="password"] {
+                width: 100%;
+                padding: 0.75rem;
+                border-radius: 8px;
+                border: 1px solid #ddd;
+                transition: all 0.3s ease;
+            }
+            
+            .auth-form input[type="text"]:focus,
+            .auth-form input[type="password"]:focus {
+                border-color: #007bff;
+                box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+            }
+            
+            .auth-form .errorlist {
+                color: #dc3545;
+                font-size: 0.875rem;
+                margin-top: 0.25rem;
+                list-style: none;
+                padding-left: 0;
+            }
+    </style>
+</head>
+<body class="d-flex flex-column min-vh-100">
+    {% include 'booking/navbar.html' %}
+    
+    <main class="flex-grow-1">
+        {% if messages %}
+            <div class="container mt-3">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+        
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    {% include 'booking/footer.html' %}
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

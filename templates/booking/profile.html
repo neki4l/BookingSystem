@@ -1,0 +1,43 @@
+{% extends 'booking/base.html' %}
+
+{% block content %}
+<div class="container py-5">
+    <h2 class="mb-4">Мои бронирования</h2>
+    <div class="row">
+        {% for booking in bookings %}
+        <div class="col-md-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header bg-info text-white">
+                    Номер {{ booking.room.room_number }}
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">{{ booking.room.room_type.name }}</h5>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">
+                            <i class="fas fa-calendar-day me-2"></i>
+                            Заезд: {{ booking.check_in|date:"d M Y" }}
+                        </li>
+                        <li class="list-group-item">
+                            <i class="fas fa-calendar-times me-2"></i>
+                            Выезд: {{ booking.check_out|date:"d M Y" }}
+                        </li>
+                        <li class="list-group-item">
+                            <i class="fas fa-wallet me-2"></i>
+                            Сумма: {{ booking.room.room_type.price }} ₽ x 
+                            {{ booking.nights }} ночей = 
+                            <strong>{{ booking.total_price }} ₽</strong>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="alert alert-info">
+                У вас пока нет активных бронирований
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
