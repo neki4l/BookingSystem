@@ -3,6 +3,7 @@ from .models import Room, Booking
 from .forms import BookingForm
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from .utils import TotalBookingPrice
 
 def home(request):
     rooms = Room.objects.filter(is_available=True)
@@ -18,6 +19,7 @@ def book_room(request, room_id):
             booking = form.save(commit=False)
             booking.user = request.user
             booking.room = room
+            booking.total_price = TotalBookingPrice(booking.check_in, booking.check_out, room.room_type.price)
             booking.save()
             messages.success(request, "Вы успешно забронировали номер!")
             return redirect('profile')
