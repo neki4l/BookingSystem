@@ -1,14 +1,11 @@
 from django.db import models
 from django.contrib.auth.models import User
 
-#TODO: Сделать фото у номера, а не типа, сделать отмену бронирования
-
 class RoomType(models.Model):
     name = models.CharField(max_length=50)
     description = models.TextField()
     price = models.DecimalField(max_digits=8, decimal_places=2)
     capacity = models.PositiveIntegerField()
-    image = models.ImageField(upload_to='room_types/')
 
     def __str__(self):
         return self.name
@@ -17,6 +14,7 @@ class Room(models.Model):
     room_number = models.CharField(max_length=10, unique=True)
     room_type = models.ForeignKey(RoomType, on_delete=models.CASCADE)
     floor_number = models.IntegerField(default=1)
+    image = models.ImageField(upload_to='room_types/', default='room_types/default.jpg')
     is_available = models.BooleanField(default=True)
 
     def __str__(self):
