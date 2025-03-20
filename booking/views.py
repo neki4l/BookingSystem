@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import Room, Booking
-from .forms import BookingForm
+from .models import Room, Booking, Review
+from .forms import BookingForm, ReviewForm
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from .booking_services import BookingService
@@ -34,3 +34,31 @@ def delete_booking(request, booking_id):
 def profile(request):
     bookings = Booking.objects.filter(user=request.user)
     return render(request, 'booking/profile.html', {'bookings': bookings})
+
+
+def show_reviews(request):
+    all_reviews = Review.objects.all().order_by('-created_at')
+    form = ReviewForm()
+    return render(request, 'booking/reviews.html', {'form': form, 'reviews': all_reviews})
+
+@login_required
+def add_review(request):
+    if request.method == 'POST':
+        form = ReviewForm(request.POST)
+        if form.is_valid():
+            review = form.save(commit=False)
+            review.user = request.user
+            review.save()
+            messages.success(request, "Ваш отзыв успешно добавлен!")
+    return redirect('reviews')
+        
+
+@login_required
+def delete_review(request, review_id):
+    review = get_object_or_404(Review, id=review_id)
+    if request.user == review.user:
+        review.delete()
+        messages.success(request, "Ваш отзыв был удалён.")
+    else:
+        messages.error(request, "Вы не можете удалить этот отзыв.")
+    return redirect('reviews')

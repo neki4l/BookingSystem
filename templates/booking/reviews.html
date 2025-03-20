@@ -1,0 +1,100 @@
+{% extends 'booking/base.html' %}
+
+{% block content %}
+<div class="container py-5">
+    <h2 class="mb-4">Отзывы о нашем отеле</h2>
+
+    <div class="text-end mb-4">
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addReviewModal">
+            <i class="fas fa-comment me-2"></i>Добавить отзыв
+        </button>
+    </div>
+
+    <h3 class="mb-4">Все отзывы</h3>
+    {% if reviews %}
+    {% for review in reviews %}
+    <div class="card mb-3">
+        <div class="card-body">
+            <h5 class="card-title">
+                {{ review.user.username }} 
+                <small class="text-muted">({{ review.created_at|date:"d M Y" }})</small>
+            </h5>
+            <div class="mb-2">
+                {% for i in "12345"|make_list %}
+                    <i class="fas fa-star {% if forloop.counter <= review.rating %}text-warning{% else %}text-secondary{% endif %}"></i>
+                {% endfor %}
+            </div>
+            <p class="card-text">{{ review.comment }}</p>
+
+            {% if request.user == review.user %}
+                <!-- Кнопка удаления (отображается только автору) -->
+                <form method="POST" action="{% url 'delete_review' review.id %}" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger btn-sm">
+                        <i class="fas fa-trash-alt"></i> Удалить
+                    </button>
+                </form>
+            {% endif %}
+        </div>
+    </div>
+{% endfor %}
+    {% else %}
+        <div class="alert alert-info">
+            Пока нет отзывов. Будьте первым!
+        </div>
+    {% endif %}
+
+    <div class="modal fade" id="addReviewModal" tabindex="-1" aria-labelledby="addReviewModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addReviewModalLabel">Оставить отзыв</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+                </div>
+                <div class="modal-body">
+                    <form method="POST" action="{% url 'add_review' %}">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="rating" class="form-label">Рейтинг</label>
+                            <div class="rating-input d-flex justify-content-center flex-row-reverse gap-2" style="direction: ltr;">
+                                {% for i in "54321"|make_list %}
+                                    <input type="radio" id="rating{{ i }}" name="rating" value="{{ i }}" required hidden>
+                                    <label for="rating{{ i }}" class="star-label">
+                                        <i class="fas fa-star"></i>
+                                    </label>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="comment" class="form-label">Комментарий</label>
+                            <textarea name="comment" id="comment" class="form-control" rows="4" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-comment me-2"></i>Отправить отзыв
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<style>
+    .rating-input {
+        display: flex;
+        flex-direction: row-reverse; /* Располагаем звёзды в нужном порядке */
+        justify-content: center;
+        gap: 5px;
+    }
+    .rating-input input {
+        display: none; /* Скрываем радио-кнопки */
+    }
+    .rating-input label {
+        font-size: 2rem;
+        cursor: pointer;
+    }
+    .rating-input label:hover ~ label i,
+    .rating-input input:checked ~ label i {
+        color: gold; /* Заполняем звёзды при наведении и выборе */
+    }
+</style>    
+{% endblock %}
