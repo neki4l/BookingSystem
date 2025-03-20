@@ -9,14 +9,12 @@
                 <form method="POST">
                     {% csrf_token %}
 
-                    <!-- Обработка ошибок формы -->
                     {% if form.errors %}
                         <div class="alert alert-danger">
                             Пожалуйста, исправьте ошибки ниже.
                         </div>
                     {% endif %}
 
-                    <!-- Поле для имени пользователя -->
                     <div class="mb-3">
                         <label for="{{ form.username.id_for_label }}" class="form-label">
                             Имя пользователя
@@ -33,7 +31,6 @@
                         {% endif %}
                     </div>
 
-                    <!-- Поле для пароля -->
                     <div class="mb-4">
                         <label for="{{ form.password.id_for_label }}" class="form-label">
                             Пароль
@@ -49,12 +46,10 @@
                         {% endif %}
                     </div>
 
-                    <!-- Кнопка входа -->
                     <button type="submit" class="btn btn-primary w-100">
                         <i class="fas fa-sign-in-alt me-2"></i>Войти
                     </button>
 
-                    <!-- Ссылка на регистрацию -->
                     <div class="text-center mt-3">
                         Нет аккаунта? <a href="{% url 'signup' %}">Зарегистрируйтесь</a>
                     </div>

@@ -9,22 +9,17 @@
                 <form method="POST">
                     {% csrf_token %}
 
-                    <!-- Обработка ошибок формы -->
                     {% if form.errors %}
                         <div class="alert alert-danger">
                             Пожалуйста, исправьте ошибки ниже.
                         </div>
                     {% endif %}
 
-                    <!-- Используем form.as_p с добавлением стилей Bootstrap -->
                     {{ form.as_p }}
-
-                    <!-- Кнопка регистрации -->
                     <button type="submit" class="btn btn-primary w-100 mt-3">
                         <i class="fas fa-user-plus me-2"></i>Зарегистрироваться
                     </button>
 
-                    <!-- Ссылка на вход -->
                     <div class="text-center mt-3">
                         Уже есть аккаунт? <a href="{% url 'login' %}">Войдите</a>
                     </div>

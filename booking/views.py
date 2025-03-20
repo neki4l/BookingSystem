@@ -3,7 +3,7 @@ from .models import Room, Booking
 from .forms import BookingForm
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from .utils import TotalBookingPrice
+from .booking_services import BookingService
 
 def home(request):
     rooms = Room.objects.filter(is_available=True)
@@ -12,14 +12,11 @@ def home(request):
 @login_required
 def book_room(request, room_id):
     room = get_object_or_404(Room, id=room_id, is_available=True)
+    booking_service = BookingService()
     if request.method == "POST":
         form = BookingForm(request.POST)
         if form.is_valid():
-            booking = form.save(commit=False)
-            booking.user = request.user
-            booking.room = room
-            booking.total_price = TotalBookingPrice(booking.check_in, booking.check_out, room.room_type.price)
-            booking.save()
+            booking_service.create_booking(room=room, user=request.user,form=form)
             messages.success(request, "Вы успешно забронировали номер!")
             return redirect('profile')
     else:
