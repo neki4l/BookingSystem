@@ -1,9 +1,9 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import Room, Booking, Review
+from .models import Room, Booking, Review, BookingService
 from .forms import BookingForm, ReviewForm
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from .booking_services import BookingService
+from django.core.exceptions import ValidationError
 
 def home(request):
     rooms = Room.objects.filter(is_available=True)
@@ -12,13 +12,22 @@ def home(request):
 @login_required
 def book_room(request, room_id):
     room = get_object_or_404(Room, id=room_id, is_available=True)
-    booking_service = BookingService()
     if request.method == "POST":
         form = BookingForm(request.POST)
         if form.is_valid():
-            booking_service.create_booking(room=room, user=request.user,form=form)
-            messages.success(request, "Вы успешно забронировали номер!")
-            return redirect('profile')
+            booking = form.save(commit=False)
+            booking.user = request.user
+            booking.room = room
+            try:
+                booking.save()
+                booking.clean()
+                for service in form.cleaned_data['services']:
+                    BookingService.objects.create(booking=booking, service=service)
+                booking.calculate_total_price()
+                messages.success(request, "Вы успешно забронировали номер!")
+                return redirect('profile')
+            except ValidationError as e:
+                messages.error(request, e.message)
     else:
         form = BookingForm()
     return render(request, 'booking/book.html', {'form': form, 'room': room})

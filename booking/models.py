@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.core.validators import MinValueValidator, MaxValueValidator
+from django.core.exceptions import ValidationError
 
 class RoomType(models.Model):
     name = models.CharField(max_length=50, verbose_name="Название")
@@ -14,6 +15,7 @@ class RoomType(models.Model):
     class Meta:
         verbose_name = "Тип номера"
         verbose_name_plural = "Типы номеров"
+
 
 class Room(models.Model):
     room_number = models.CharField(max_length=10, unique=True, verbose_name="Номер комнаты")
@@ -29,6 +31,7 @@ class Room(models.Model):
         verbose_name = "Номер"
         verbose_name_plural = "Номера"
 
+
 class Booking(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="Пользователь")
     room = models.ForeignKey(Room, on_delete=models.CASCADE, verbose_name="Комната")
@@ -36,6 +39,10 @@ class Booking(models.Model):
     check_in = models.DateField(verbose_name="Заезд")
     check_out = models.DateField(verbose_name="Выезд")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
+    
+    class Meta:
+        verbose_name = "Бронирование"
+        verbose_name_plural = "Бронирования"
 
     def save(self, *args, **kwargs):
         if not self.pk:
@@ -49,13 +56,51 @@ class Booking(models.Model):
         self.room.is_available = True
         self.room.save()
         super().delete(*args, **kwargs)
+        
+    def calculate_total_price(self):
+        room_price = (self.check_out - self.check_in).days * self.room.room_type.price
+        
+        services_price = sum(
+            service.service.price * service.quantity
+            for service in self.services.all()
+        )
+        self.total_price = room_price + services_price
+        self.save()
+    
+    def clean(self):
+        if self.check_in > self.check_out:
+            raise ValidationError("Дата выезда должна быть больше или ровна дате заезда!")
 
+        
     def __str__(self):
         return f"{self.user.username} - {self.room}"
     
+    
+class Service(models.Model):
+    name = models.CharField(max_length=100, verbose_name="Название услуги")
+    price = models.DecimalField(max_digits=8, decimal_places=2, verbose_name="Цена")
+    description = models.TextField(verbose_name="Описание", blank=True)
+
+    def __str__(self):
+            return f"{self.name} ({self.price} руб)"
+
     class Meta:
-        verbose_name = "Бронирование"
-        verbose_name_plural = "Бронирования"
+            verbose_name = "Дополнительная услуга"
+            verbose_name_plural = "Дополнительные услуги"
+            
+            
+class BookingService(models.Model):
+    booking = models.ForeignKey(Booking, on_delete=models.CASCADE, related_name="services")
+    service = models.ForeignKey(Service, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField(default=1, verbose_name="Количество")
+
+    def __str__(self):
+            return f"{self.service.name} x {self.quantity}"
+
+    class Meta:
+            verbose_name = "Услуга в бронировании"
+            verbose_name_plural = "Услуги в бронировании"
+    
     
 class Review(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="Пользователь")
