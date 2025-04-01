@@ -149,6 +149,39 @@
                 .form-check-label {
                     margin-left: 0.5rem;
                 }
+
+
+
+
+
+                /* Стили для фильтра */
+                .filter-card {
+                    border-radius: 10px;
+                    border: 1px solid #e0e0e0;
+                }
+                
+                .filter-card .form-control {
+                    border-radius: 8px;
+                    padding: 0.5rem 0.75rem;
+                }
+                
+                .filter-card label {
+                    font-weight: 500;
+                    color: #555;
+                    margin-bottom: 0.3rem;
+                }
+                
+                /* Адаптация под мобильные устройства */
+                @media (max-width: 768px) {
+                    .filter-card .col-md-3, 
+                    .filter-card .col-md-2 {
+                        margin-bottom: 1rem;
+                    }
+                    
+                    .filter-card .d-flex {
+                        justify-content: center;
+                    }
+                }
             
     </style>
 </head>

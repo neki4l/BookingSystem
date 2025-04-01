@@ -1,13 +1,36 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Room, Booking, Review, BookingService
-from .forms import BookingForm, ReviewForm
+from .forms import BookingForm, ReviewForm, RoomFilterForm
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 
 def home(request):
     rooms = Room.objects.filter(is_available=True)
-    return render(request, 'booking/home.html', {'rooms': rooms})
+    form = RoomFilterForm(request.GET or None)
+    
+    if form.is_valid():
+        room_type = form.cleaned_data.get('room_type')
+        min_price = form.cleaned_data.get('min_price')
+        max_price = form.cleaned_data.get('max_price')
+        capacity = form.cleaned_data.get('capacity')
+        
+        if room_type:
+            rooms = rooms.filter(room_type=room_type)
+            
+        if min_price:
+            rooms = rooms.filter(room_type__price__gte=min_price)
+            
+        if max_price:
+            rooms = rooms.filter(room_type__price__lte=max_price)
+            
+        if capacity:
+            rooms = rooms.filter(room_type__capacity__gte=capacity)
+    
+    return render(request, 'booking/home.html', {
+        'rooms': rooms,
+        'form': form
+    })
 
 @login_required
 def book_room(request, room_id):

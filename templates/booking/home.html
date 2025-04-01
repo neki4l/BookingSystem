@@ -9,7 +9,41 @@
 </div>
 
 <div class="container py-5">
+    <!-- Фильтры -->
+    <div class="card mb-5 shadow-sm">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    {{ form.room_type.label_tag }}
+                    {{ form.room_type }}
+                </div>
+                <div class="col-md-2">
+                    {{ form.min_price.label_tag }}
+                    {{ form.min_price }}
+                </div>
+                <div class="col-md-2">
+                    {{ form.max_price.label_tag }}
+                    {{ form.max_price }}
+                </div>
+                <div class="col-md-2">
+                    {{ form.capacity.label_tag }}
+                    {{ form.capacity }}
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary me-2">
+                        <i class="fas fa-filter me-1"></i> Применить
+                    </button>
+                    <a href="{% url 'home' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-times me-1"></i> Сбросить
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Список номеров -->
     <h2 class="text-center mb-5">Наши номера</h2>
+    {% if rooms %}
     <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
         {% for room in rooms %}
         <div class="col">
@@ -20,18 +54,24 @@
                 <img src="{{ room.image.url }}" class="card-img-top" 
                      alt="{{ room.room_type.name }}" style="height: 200px; object-fit: cover;">
                 <div class="card-body">
-                    <h5 class="card-title">{{ room.room_type.name }}</h5>
+                    <h5 class="card-title">{{ room.room_type.name }} №{{ room.room_number }}</h5>
                     <p class="card-text">{{ room.room_type.description }}</p>
                     <ul class="list-unstyled">
                         <li><i class="fas fa-users me-2"></i>Вместимость: {{ room.room_type.capacity }} чел.</li>
                         <li><i class="fas fa-door-open me-2"></i>Этаж: {{ room.floor_number }}</li>
                     </ul>
-                    <a href="{% url 'book' room.pk %}" 
-                       class="btn btn-primary w-100">Забронировать</a>
+                    <a href="{% url 'book' room.pk %}" class="btn btn-primary w-100">
+                        Забронировать
+                    </a>
                 </div>
             </div>
         </div>
         {% endfor %}
     </div>
+    {% else %}
+    <div class="alert alert-info text-center">
+        По выбранным фильтрам номеров не найдено. Попробуйте изменить критерии поиска.
+    </div>
+    {% endif %}
 </div>
 {% endblock %}

@@ -36,6 +36,7 @@ class Booking(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="Пользователь")
     room = models.ForeignKey(Room, on_delete=models.CASCADE, verbose_name="Комната")
     total_price = models.IntegerField(default=0, verbose_name="Общая стоимость")
+    is_cancelled = models.BooleanField(default=False, verbose_name='Отменено')
     check_in = models.DateField(verbose_name="Заезд")
     check_out = models.DateField(verbose_name="Выезд")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
@@ -66,6 +67,13 @@ class Booking(models.Model):
         )
         self.total_price = room_price + services_price
         self.save()
+    
+    def cancel(self):
+        self.is_cancelled = True
+        self.room.is_available = True
+        self.room.save()
+        self.save()
+        
     
     def clean(self):
         if self.check_in > self.check_out:
