@@ -17,6 +17,16 @@ class BookingForm(forms.ModelForm):
             'check_out': forms.DateInput(attrs={'type': 'date'}),
         }
         
+    def clean(self):
+        cleaned_data = super().clean()
+        check_in = cleaned_data.get('check_in')
+        check_out = cleaned_data.get('check_out')
+        
+        if check_in and check_out and check_out <= check_in:
+            raise forms.ValidationError("Дата выезда должна быть позже даты заезда!")
+            
+        return cleaned_data
+        
 class ReviewForm(forms.ModelForm):
     class Meta:
         model = Review

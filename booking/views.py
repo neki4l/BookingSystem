@@ -1,5 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Room, Booking, Review, BookingService
+from django.utils import timezone
+from django.db import models
 from .forms import BookingForm, ReviewForm, RoomFilterForm
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -56,16 +58,32 @@ def book_room(request, room_id):
     return render(request, 'booking/book.html', {'form': form, 'room': room})
 
 @login_required
-def delete_booking(request, booking_id):
+def cancel_booking(request, booking_id):
     booking = get_object_or_404(Booking, id=booking_id, user=request.user)
-    booking.delete()
-    messages.success(request, "Вы успешно отменили бронирование!")
+    
+    if request.method == 'POST':
+        booking.cancel()
+        messages.success(request, "Бронирование успешно отменено")
+        return redirect('profile')
+    
     return redirect('profile')
 
 @login_required
 def profile(request):
-    bookings = Booking.objects.filter(user=request.user)
-    return render(request, 'booking/profile.html', {'bookings': bookings})
+    now = timezone.now().date()
+    all_bookings = Booking.objects.filter(user=request.user).order_by('-created_at')
+    for booking in all_bookings:
+        booking.check_dates()
+    active_bookings = all_bookings.filter(is_cancelled=False, check_out__gte=now)
+    history_bookings = all_bookings.filter(
+        models.Q(is_cancelled=True) | models.Q(check_out__lt=now)
+    )
+    
+    return render(request, 'booking/profile.html', {
+        'active_bookings': active_bookings,
+        'history_bookings': history_bookings,
+        'now': now
+    })
 
 
 def show_reviews(request):

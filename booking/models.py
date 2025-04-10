@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 from django.contrib.auth.models import User
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.core.exceptions import ValidationError
@@ -40,6 +41,7 @@ class Booking(models.Model):
     check_in = models.DateField(verbose_name="Заезд")
     check_out = models.DateField(verbose_name="Выезд")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="Дата Обновления")
     
     class Meta:
         verbose_name = "Бронирование"
@@ -52,6 +54,11 @@ class Booking(models.Model):
             self.room.is_available = False
             self.room.save()
         super().save(*args, **kwargs)
+        
+    def check_dates(self):
+        if self.check_out < timezone.now().date():
+            self.room.is_available = True
+            self.room.save()
 
     def delete(self, *args, **kwargs):
         self.room.is_available = True
@@ -59,7 +66,7 @@ class Booking(models.Model):
         super().delete(*args, **kwargs)
         
     def calculate_total_price(self):
-        room_price = (self.check_out - self.check_in).days * self.room.room_type.price
+        room_price = max(1, (self.check_out - self.check_in).days) * self.room.room_type.price
         
         services_price = sum(
             service.service.price * service.quantity
@@ -73,7 +80,6 @@ class Booking(models.Model):
         self.room.is_available = True
         self.room.save()
         self.save()
-        
     
     def clean(self):
         if self.check_in > self.check_out:

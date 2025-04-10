@@ -9,15 +9,25 @@
                     <h3 class="mb-0">Бронирование номера {{ room.room_number }}</h3>
                 </div>
                 <div class="card-body">
-                    <form method="POST">
+                    <form method="POST" id="bookingForm">
                         {% csrf_token %}
                         <div class="mb-3">
                             <label for="{{ form.check_in.id_for_label }}" class="form-label">Дата заезда</label>
                             {{ form.check_in }}
+                            {% if form.check_in.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.check_in.errors|join:", " }}
+                                </div>
+                            {% endif %}
                         </div>
                         <div class="mb-3">
                             <label for="{{ form.check_out.id_for_label }}" class="form-label">Дата выезда</label>
                             {{ form.check_out }}
+                            {% if form.check_out.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.check_out.errors|join:", " }}
+                                </div>
+                            {% endif %}
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Дополнительные услуги</label>
@@ -41,4 +51,21 @@
         </div>
     </div>
 </div>
+
+<script>
+document.getElementById('bookingForm').addEventListener('submit', function(e) {
+    const checkIn = document.getElementById('{{ form.check_in.id_for_label }}').value;
+    const checkOut = document.getElementById('{{ form.check_out.id_for_label }}').value;
+    
+    if (checkIn && checkOut) {
+        const checkInDate = new Date(checkIn);
+        const checkOutDate = new Date(checkOut);
+        
+        if (checkOutDate <= checkInDate) {
+            e.preventDefault();
+            alert('Дата выезда должна быть позже даты заезда!');
+        }
+    }
+});
+</script>
 {% endblock %}

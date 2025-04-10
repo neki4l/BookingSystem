@@ -3,47 +3,165 @@
 {% block content %}
 <div class="container py-5">
     <h2 class="mb-4">Мои бронирования</h2>
-    <div class="row">
-        {% for booking in bookings %}
-        <div class="col-md-6 mb-4">
-            <div class="card shadow">
-                <div class="card-header bg-info text-white">
-                    Номер {{ booking.room.room_number }}
-                </div>
-                <div class="card-body">
-                    <h5 class="card-title">{{ booking.room.room_type.name }}</h5>
-                    <ul class="list-group list-group-flush">
-                        <li class="list-group-item">
-                            <i class="fas fa-calendar-day me-2"></i>
-                            Заезд: {{ booking.check_in|date:"d M Y" }}
-                        </li>
-                        <li class="list-group-item">
-                            <i class="fas fa-calendar-times me-2"></i>
-                            Выезд: {{ booking.check_out|date:"d M Y" }}
-                        </li>
-                        <li class="list-group-item">
-                            <i class="fas fa-wallet me-2"></i>
-                            Сумма: {{ booking.room.room_type.price }} ₽ x 
-                            {{ booking.nights }} ночей = 
-                            <strong>{{ booking.total_price }} ₽</strong>
-                        </li>
-                    </ul>
-                    <form action="{% url 'delete_booking' booking.id %}" method="post" class="mt-3">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-danger w-100">
-                            <i class="fas fa-trash-alt me-2"></i>Удалить бронирование
-                        </button>
-                    </form>
+    
+    <!-- Кнопки переключения -->
+    <div class="d-flex mb-4">
+        <button class="btn btn-primary me-2" onclick="showActiveBookings()">
+            <i class="fas fa-calendar-check me-2"></i>Активные бронирования
+        </button>
+        <button class="btn btn-outline-secondary" onclick="showHistoryBookings()">
+            <i class="fas fa-history me-2"></i>История бронирований
+        </button>
+    </div>
+
+    <!-- Активные бронирования -->
+    <div id="active-bookings">
+        <h3 class="mb-3">Активные бронирования</h3>
+        {% if active_bookings %}
+        <div class="row">
+            {% for booking in active_bookings %}
+            <div class="col-md-6 mb-4">
+                <div class="card shadow">
+                    <div class="card-header bg-info text-white">
+                        Номер {{ booking.room.room_number }}
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">{{ booking.room.room_type.name }}</h5>
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item">
+                                <i class="fas fa-calendar-day me-2"></i>
+                                Заезд: {{ booking.check_in|date:"d M Y" }}
+                            </li>
+                            <li class="list-group-item">
+                                <i class="fas fa-calendar-times me-2"></i>
+                                Выезд: {{ booking.check_out|date:"d M Y" }}
+                            </li>
+                            <li class="list-group-item">
+                                <i class="fas fa-wallet me-2"></i>
+                                Сумма: {{ booking.total_price }} ₽
+                            </li>
+                        </ul>
+                        <form action="{% url 'cancel_booking' booking.id %}" method="post" class="mt-3">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger w-100">
+                                <i class="fas fa-times me-2"></i>Отменить бронь
+                            </button>
+                        </form>
+                    </div>
                 </div>
             </div>
+            {% endfor %}
         </div>
-        {% empty %}
-        <div class="col-12">
-            <div class="alert alert-info">
-                У вас пока нет активных бронирований
+        {% else %}
+        <div class="alert alert-info">
+            У вас нет активных бронирований
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- История бронирований (изначально скрыта) -->
+    <div id="history-bookings" style="display: none;">
+        <h3 class="mb-3">История бронирований</h3>
+        {% if history_bookings %}
+        <div class="row">
+            {% for booking in history_bookings %}
+            <div class="col-md-6 mb-4">
+                <div class="card shadow">
+                    <div class="card-header {% if booking.is_cancelled %}bg-danger{% else %}bg-secondary{% endif %} text-white">
+                        Номер {{ booking.room.room_number }}
+                        {% if booking.is_cancelled %}
+                        <span class="float-end">Отменено</span>
+                        {% else %}
+                        <span class="float-end">Завершено</span>
+                        {% endif %}
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">{{ booking.room.room_type.name }}</h5>
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item">
+                                <i class="fas fa-calendar-day me-2"></i>
+                                Заезд: {{ booking.check_in|date:"d M Y" }}
+                            </li>
+                            <li class="list-group-item">
+                                <i class="fas fa-calendar-times me-2"></i>
+                                Выезд: {{ booking.check_out|date:"d M Y" }}
+                            </li>
+                            <li class="list-group-item">
+                                <i class="fas fa-wallet me-2"></i>
+                                Сумма: {{ booking.total_price }} ₽
+                            </li>
+                            <li class="list-group-item">
+                                <i class="fas fa-clock me-2"></i>
+                                {% if booking.is_cancelled %}
+                                    Отменено: {{ booking.updated_at|date:"d M Y" }}
+                                {% else %}
+                                    Завершено: {{ booking.check_out|date:"d M Y" }}
+                                {% endif %}
+                            </li>
+                        </ul>
+                    </div>
+                </div>
             </div>
+            {% endfor %}
         </div>
-        {% endfor %}
+        {% else %}
+        <div class="alert alert-info">
+            История бронирований пуста
+        </div>
+        {% endif %}
     </div>
 </div>
+
+<script>
+function showActiveBookings() {
+    document.getElementById('active-bookings').style.display = 'block';
+    document.getElementById('history-bookings').style.display = 'none';
+    document.querySelector('.btn-primary').classList.remove('btn-outline-secondary');
+    document.querySelector('.btn-primary').classList.add('btn-primary');
+    document.querySelector('.btn-outline-secondary').classList.remove('btn-primary');
+    document.querySelector('.btn-outline-secondary').classList.add('btn-outline-secondary');
+}
+
+function showHistoryBookings() {
+    document.getElementById('active-bookings').style.display = 'none';
+    document.getElementById('history-bookings').style.display = 'block';
+    document.querySelector('.btn-outline-secondary').classList.remove('btn-outline-secondary');
+    document.querySelector('.btn-outline-secondary').classList.add('btn-primary');
+    document.querySelector('.btn-primary').classList.remove('btn-primary');
+    document.querySelector('.btn-primary').classList.add('btn-outline-secondary');
+}
+</script>
+
+<style>
+    /* Стили для кнопок переключения */
+    .btn-toggle {
+        margin-bottom: 1rem;
+    }
+    
+    /* Стили для карточек */
+    .booking-card {
+        transition: transform 0.2s;
+        margin-bottom: 1.5rem;
+    }
+    
+    .booking-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    
+    .card-header {
+        font-weight: 500;
+    }
+    
+    .list-group-item {
+        padding: 0.75rem 1.25rem;
+    }
+    
+    /* Адаптация для мобильных */
+    @media (max-width: 768px) {
+        .col-md-6 {
+            margin-bottom: 1rem;
+        }
+    }
+</style>
 {% endblock %}
