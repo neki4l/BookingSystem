@@ -6,6 +6,7 @@ from .forms import BookingForm, ReviewForm, RoomFilterForm
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
+from django.core.paginator import Paginator
 
 def home(request):
     rooms = Room.objects.filter(is_available=True)
@@ -29,8 +30,12 @@ def home(request):
         if capacity:
             rooms = rooms.filter(room_type__capacity__gte=capacity)
     
+    paginator = Paginator(rooms, 6)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
     return render(request, 'booking/home.html', {
-        'rooms': rooms,
+        'page_obj': page_obj,
         'form': form
     })
 

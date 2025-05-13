@@ -9,7 +9,6 @@
 </div>
 
 <div class="container py-5">
-    <!-- Фильтры -->
     <div class="card mb-5 shadow-sm">
         <div class="card-body">
             <form method="get" class="row g-3">
@@ -41,11 +40,10 @@
         </div>
     </div>
 
-    <!-- Список номеров -->
     <h2 class="text-center mb-5">Наши номера</h2>
-    {% if rooms %}
+    {% if page_obj %}
     <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-        {% for room in rooms %}
+        {% for room in page_obj %}
         <div class="col">
             <div class="card room-card h-100">
                 <span class="price-badge bg-success text-white p-2 rounded">
@@ -60,7 +58,7 @@
                         <li><i class="fas fa-users me-2"></i>Вместимость: {{ room.room_type.capacity }} чел.</li>
                         <li><i class="fas fa-door-open me-2"></i>Этаж: {{ room.floor_number }}</li>
                     </ul>
-                    <a href="{% url 'book' room.pk %}" class="btn btn-primary w-100">
+                    <a href="{% url 'book' room.id %}" class="btn btn-primary w-100">
                         Забронировать
                     </a>
                 </div>
@@ -72,6 +70,50 @@
     <div class="alert alert-info text-center">
         По выбранным фильтрам номеров не найдено. Попробуйте изменить критерии поиска.
     </div>
+    {% endif %}
+
+    {% if page_obj.paginator.num_pages > 1 %}
+        <nav aria-label="Page navigation" class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1{% if request.GET.room_type %}&room_type={{ request.GET.room_type }}{% endif %}{% if request.GET.min_price %}&min_price={{ request.GET.min_price }}{% endif %}{% if request.GET.max_price %}&max_price={{ request.GET.max_price }}{% endif %}{% if request.GET.capacity %}&capacity={{ request.GET.capacity }}{% endif %}" aria-label="First">
+                            <span aria-hidden="true">&laquo;&laquo;</span>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.room_type %}&room_type={{ request.GET.room_type }}{% endif %}{% if request.GET.min_price %}&min_price={{ request.GET.min_price }}{% endif %}{% if request.GET.max_price %}&max_price={{ request.GET.max_price }}{% endif %}{% if request.GET.capacity %}&capacity={{ request.GET.capacity }}{% endif %}" aria-label="Previous">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                {% endif %}
+
+                {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ num }}</span>
+                        </li>
+                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ num }}{% if request.GET.room_type %}&room_type={{ request.GET.room_type }}{% endif %}{% if request.GET.min_price %}&min_price={{ request.GET.min_price }}{% endif %}{% if request.GET.max_price %}&max_price={{ request.GET.max_price }}{% endif %}{% if request.GET.capacity %}&capacity={{ request.GET.capacity }}{% endif %}">{{ num }}</a>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.room_type %}&room_type={{ request.GET.room_type }}{% endif %}{% if request.GET.min_price %}&min_price={{ request.GET.min_price }}{% endif %}{% if request.GET.max_price %}&max_price={{ request.GET.max_price }}{% endif %}{% if request.GET.capacity %}&capacity={{ request.GET.capacity }}{% endif %}" aria-label="Next">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.room_type %}&room_type={{ request.GET.room_type }}{% endif %}{% if request.GET.min_price %}&min_price={{ request.GET.min_price }}{% endif %}{% if request.GET.max_price %}&max_price={{ request.GET.max_price }}{% endif %}{% if request.GET.capacity %}&capacity={{ request.GET.capacity }}{% endif %}" aria-label="Last">
+                            <span aria-hidden="true">&raquo;&raquo;</span>
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
     {% endif %}
 </div>
 {% endblock %}
